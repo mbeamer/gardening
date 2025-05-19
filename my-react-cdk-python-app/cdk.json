@@ -1,0 +1,7 @@
+{
+  "app": "python app.py",
+  "context": {
+    "domain_name": "thebeamers.ca",
+    "s3_bucket_name": "my-react-app-bucket"
+  }
+}
