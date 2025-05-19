@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM User and Role for GitHub Actions CDK Deployments
+
+Resources:
+  GithubActionsUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: github-actions-cdk-deploy
+
+  GithubActionsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: github-actions-cdk-policy
+      Users:
+        - !Ref GithubActionsUser
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+              - cloudformation:*
+              - route53:*
+              - iam:PassRole
+            Resource: "*"
+
+  GithubActionsAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref GithubActionsUser
+
+  GithubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: github-actions-cdk-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !GetAtt GithubActionsUser.Arn
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: github-actions-cdk-inline
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                  - cloudformation:*
+                  - route53:*
+                Resource: "*"
+
+Outputs:
+  AccessKeyId:
+    Description: Access Key ID for GitHub Actions
+    Value: !Ref GithubActionsAccessKey
+  SecretAccessKey:
+    Description: Secret Access Key for GitHub Actions
+    Value: !GetAtt GithubActionsAccessKey.SecretAccessKey
+  RoleArn:
+    Description: IAM Role ARN for GitHub Actions
+    Value: !GetAtt GithubActionsRole.Arn
