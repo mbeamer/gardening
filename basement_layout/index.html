@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basement Layout Planner</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #69736d;
+      --paper: #f3f0e7;
+      --panel: #fffdfa;
+      --line: #d8d4c8;
+      --green: #2e5b4a;
+      --green-light: #dbe7df;
+      --rust: #b66a43;
+      --gold: #c59b52;
+      --blue: #6689a1;
+      --purple: #817291;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 10%, rgba(255,255,255,.8), transparent 22rem),
+        var(--paper);
+      font-family: Inter, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+
+    aside {
+      position: relative;
+      z-index: 2;
+      padding: 28px 24px;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--green);
+      font-family: Inter, sans-serif;
+      font-size: 16px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-family: Georgia, serif;
+      font-size: 31px;
+      line-height: 1.05;
+      letter-spacing: -.03em;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .section-label {
+      margin: 20px 0 10px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .dimensions {
+      display: grid;
+      grid-template-columns: 1fr 12px 1fr;
+      align-items: end;
+      gap: 8px;
+    }
+
+    .dimension label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .dimension input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      font: 600 14px Inter, sans-serif;
+    }
+
+    .times { padding-bottom: 10px; text-align: center; color: var(--muted); }
+
+    .furniture-controls {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #faf9f4;
+    }
+
+    .furniture-controls.visible { display: block; }
+
+    .selected-name {
+      display: block;
+      margin-bottom: 9px;
+      font: 700 12px Inter, sans-serif;
+    }
+
+    .furniture-controls .dimensions { grid-template-columns: 1fr 12px 1fr; }
+
+    .rotation-row {
+      display: grid;
+      grid-template-columns: 1fr 70px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .rotation-row label { color: var(--muted); font-size: 11px; }
+
+    .rotation-row input {
+      width: 100%;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 8px;
+      color: var(--ink);
+      background: #fff;
+      font: 600 13px Inter, sans-serif;
+    }
+
+    .furniture.selected {
+      outline: 2px dashed var(--rust);
+      outline-offset: 6px;
+      filter: drop-shadow(4px 6px 4px rgba(31,40,35,.18));
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 2px;
+      font-family: Georgia, serif;
+      font-size: 19px;
+    }
+
+    .stat span { color: var(--muted); font-size: 10px; }
+
+    main {
+      min-width: 0;
+      padding: 22px 28px 28px;
+    }
+
+    .toolbar {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .view-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .controls { display: flex; gap: 7px; }
+
+    .save-status {
+      min-width: 46px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .icon-btn {
+      height: 36px;
+      min-width: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+      font: 700 14px Inter, sans-serif;
+    }
+
+    .icon-btn:hover { background: white; border-color: #bdb8aa; }
+
+    .canvas-wrap {
+      height: calc(100vh - 100px);
+      min-height: 520px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        linear-gradient(rgba(111,119,108,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(111,119,108,.045) 1px, transparent 1px),
+        #ebe8de;
+      background-size: 20px 20px;
+      box-shadow: 0 12px 35px rgba(44,48,39,.06);
+    }
+
+    #plan {
+      width: 92%;
+      height: 92%;
+      transition: transform .25s ease;
+      filter: drop-shadow(0 10px 10px rgba(43,48,41,.10));
+    }
+
+    .room-wall { fill: #fbfaf5; stroke: #26312c; stroke-width: 9; }
+    .room-depth { fill: #efede4; stroke: #26312c; stroke-width: 3; }
+    .room-grid { stroke: #d9d7ce; stroke-width: .6; }
+    .zone-fill { opacity: .16; transition: opacity .2s, filter .2s; }
+    .zone-outline { fill: none; stroke-width: 1.2; stroke-dasharray: 5 4; opacity: .55; }
+    .furniture { filter: drop-shadow(2px 3px 2px rgba(31,40,35,.12)); cursor: grab; }
+    .furniture:active { cursor: grabbing; }
+    .furniture rect, .furniture ellipse, .furniture path, .furniture circle {
+      transition: opacity .18s, filter .18s;
+    }
+    .label {
+      fill: #26312c;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      text-anchor: middle;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .small-label {
+      fill: #69736d;
+      font-family: Inter, sans-serif;
+      font-size: 8.5px;
+      text-anchor: middle;
+    }
+    .dim-label {
+      fill: #69736d;
+      font-family: Georgia, serif;
+      font-size: 13px;
+      text-anchor: middle;
+    }
+    .highlight .zone-fill { opacity: .32; }
+    .muted { opacity: .25; }
+
+    @media (max-width: 820px) {
+      .shell { grid-template-columns: 1fr; }
+      aside { border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { margin-bottom: 16px; }
+      .subtitle { margin-bottom: 12px; }
+      main { padding: 12px; }
+      .canvas-wrap { height: 64vh; min-height: 430px; }
+      .stats { display: none; }
+    }
+
+    @media print {
+      body { background: white; }
+      .shell { display: block; }
+      aside { display: none; }
+      main { padding: 0; }
+      .toolbar { display: none; }
+      .canvas-wrap { width: 100%; height: 100vh; border: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><span class="brand-mark">B</span> Basement</div>
+      <h1>Plan a room<br>that does more.</h1>
+      <p class="subtitle">Overhead concept with clearly defined activity zones and open circulation.</p>
+
+      <div class="section-label">Room dimensions</div>
+      <div class="dimensions">
+        <div class="dimension">
+          <label for="roomWidth">Width (ft)</label>
+          <input id="roomWidth" type="number" min="12" max="60" value="28">
+        </div>
+        <div class="times">×</div>
+        <div class="dimension">
+          <label for="roomLength">Length (ft)</label>
+          <input id="roomLength" type="number" min="12" max="80" value="40">
+        </div>
+      </div>
+
+      <div class="section-label">Furniture</div>
+      <div class="furniture-controls" id="furnitureControls">
+        <span class="selected-name" id="selectedName">Select furniture</span>
+        <div class="dimensions">
+          <div class="dimension">
+            <label for="furnitureWidth">Width (ft)</label>
+            <input id="furnitureWidth" type="number" min="0.5" max="60" step="0.1">
+          </div>
+          <div class="times">×</div>
+          <div class="dimension">
+            <label for="furnitureLength">Depth (ft)</label>
+            <input id="furnitureLength" type="number" min="0.5" max="80" step="0.1">
+          </div>
+        </div>
+        <div class="rotation-row">
+          <label for="furnitureRotation">Rotation</label>
+          <input id="furnitureRotation" type="number" min="-360" max="360" step="15" value="0">
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong id="areaStat">1,120</strong><span>sq ft usable</span></div>
+        <div class="stat"><strong>8 ft</strong><span>ceiling estimate</span></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <div class="view-title">Overhead view · Concept A</div>
+        <div class="controls">
+          <button class="icon-btn" id="zoomOut" title="Zoom out">−</button>
+          <button class="icon-btn" id="zoomReset" title="Reset zoom">100%</button>
+          <button class="icon-btn" id="zoomIn" title="Zoom in">+</button>
+          <button class="icon-btn" id="saveBtn" title="Save layout">Save</button>
+          <button class="icon-btn" id="printBtn" title="Print plan">⤓</button>
+          <span class="save-status" id="saveStatus"></span>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <svg id="plan" viewBox="-38 -38 736 536" role="img" aria-label="Overhead basement furniture layout">
+          <!-- dimension lines -->
+          <line id="widthTopLine" x1="0" y1="-12" x2="660" y2="-12" stroke="#b9b7ad" stroke-width="1"/>
+          <line x1="0" y1="-20" x2="0" y2="-4" stroke="#b9b7ad" stroke-width="1"/>
+          <line x1="660" y1="-20" x2="660" y2="-4" stroke="#b9b7ad" stroke-width="1"/>
+          <text class="dim-label" x="330" y="-15" id="widthLabel">28 ft</text>
+          <line id="lengthSideLine" x1="-12" y1="0" x2="-12" y2="460" stroke="#b9b7ad" stroke-width="1"/>
+          <line x1="-20" y1="0" x2="-4" y2="0" stroke="#b9b7ad" stroke-width="1"/>
+          <line x1="-20" y1="460" x2="-4" y2="460" stroke="#b9b7ad" stroke-width="1"/>
+          <text class="dim-label" x="-16" y="230" transform="rotate(-90 -16 230)" id="lengthLabel">40 ft</text>
+
+          <!-- room shell -->
+          <rect id="roomDepth" class="room-depth" x="0" y="0" width="660" height="460"/>
+          <rect id="roomWall" class="room-wall" x="0" y="0" width="660" height="460"/>
+          <rect id="roomInner" x="9" y="9" width="642" height="442" fill="#f9f8f2"/>
+
+          <!-- subtle floor grid -->
+          <g id="roomGrid" class="room-grid">
+            <path d="M66 9V451M132 9V451M198 9V451M264 9V451M330 9V451M396 9V451M462 9V451M528 9V451M594 9V451"/>
+            <path d="M9 64H651M9 119H651M9 174H651M9 229H651M9 284H651M9 339H651M9 394H651"/>
+          </g>
+
+          <!-- lounge furniture -->
+          <g class="furniture" data-furniture="Television">
+            <rect x="246" y="27" width="128" height="10" rx="4" fill="#4f554f"/>
+            <rect x="300" y="38" width="20" height="7" fill="#7b7f79"/>
+          </g>
+          <g class="furniture" data-furniture="Sectional sofa">
+            <path d="M139 67Q139 54 152 54H193Q206 54 206 67V132Q206 145 193 145H152Q139 145 139 132Z" fill="#aa7461" stroke="#735244" stroke-width="2"/>
+            <path d="M139 67H206M139 96H206M139 121H206" stroke="#8e6253" stroke-width="1"/>
+            <path d="M139 54H204Q218 54 218 68V83H206V67Q206 54 193 54Z" fill="#b28170" stroke="#735244" stroke-width="2"/>
+          </g>
+          <g class="furniture" data-furniture="Coffee table">
+            <rect x="244" y="84" width="86" height="52" rx="26" fill="#c9ae7e" stroke="#806c49" stroke-width="2"/>
+            <ellipse cx="287" cy="110" rx="29" ry="17" fill="#dac58f" opacity=".45"/>
+          </g>
+          <g class="furniture" data-furniture="Accent chair">
+            <rect x="361" y="67" width="54" height="48" rx="17" fill="#728d7d" stroke="#4e685a" stroke-width="2"/>
+            <rect x="368" y="74" width="40" height="34" rx="12" fill="#91a798" opacity=".7"/>
+          </g>
+          <g class="furniture" data-furniture="Accent chair">
+            <rect x="361" y="140" width="54" height="48" rx="17" fill="#728d7d" stroke="#4e685a" stroke-width="2"/>
+            <rect x="368" y="147" width="40" height="34" rx="12" fill="#91a798" opacity=".7"/>
+          </g>
+
+          <!-- game room -->
+          <g class="furniture" data-furniture="Pool table">
+            <rect x="169" y="275" width="206" height="112" rx="8" fill="#526d54" stroke="#263d2d" stroke-width="8"/>
+            <rect x="181" y="287" width="182" height="88" rx="3" fill="#718d70"/>
+            <circle cx="181" cy="287" r="5" fill="#9eaa96"/><circle cx="363" cy="287" r="5" fill="#9eaa96"/>
+            <circle cx="181" cy="375" r="5" fill="#9eaa96"/><circle cx="363" cy="375" r="5" fill="#9eaa96"/>
+          </g>
+          <g class="furniture" data-furniture="Arcade cabinet">
+            <rect x="129" y="402" width="54" height="25" rx="4" fill="#bf6f4e" stroke="#8f5038" stroke-width="2"/>
+            <rect x="137" y="407" width="38" height="12" rx="2" fill="#303b38"/>
+          </g>
+
+          <!-- gym -->
+          <g class="furniture" data-furniture="Treadmill">
+            <rect x="484" y="250" width="62" height="32" rx="5" fill="#59676a" stroke="#3e484a" stroke-width="2"/>
+            <rect x="491" y="257" width="48" height="18" rx="3" fill="#9aa7a8"/>
+            <path d="M539 282L552 330M539 282L526 330" stroke="#59676a" stroke-width="5"/>
+            <rect x="514" y="328" width="47" height="8" rx="3" fill="#59676a"/>
+          </g>
+          <g class="furniture" data-furniture="Yoga mats">
+            <rect x="486" y="370" width="58" height="48" rx="4" fill="#99adbb" transform="rotate(-8 515 394)" opacity=".9"/>
+            <rect x="574" y="353" width="58" height="48" rx="4" fill="#c4d2d8" transform="rotate(7 603 377)" opacity=".9"/>
+          </g>
+          <g class="furniture" data-furniture="Weight rack">
+            <rect x="601" y="250" width="39" height="78" rx="3" fill="#77858a"/>
+            <rect x="610" y="258" width="21" height="12" rx="2" fill="#4d595c"/>
+            <rect x="610" y="278" width="21" height="12" rx="2" fill="#4d595c"/>
+            <rect x="610" y="298" width="21" height="12" rx="2" fill="#4d595c"/>
+          </g>
+
+          <!-- office -->
+          <g class="furniture" data-furniture="Desk">
+            <rect x="500" y="55" width="110" height="42" rx="5" fill="#b49a72" stroke="#806c49" stroke-width="2"/>
+            <rect x="544" y="62" width="40" height="24" rx="3" fill="#526158"/>
+          </g>
+          <g class="furniture" data-furniture="Office chair">
+            <rect x="530" y="110" width="70" height="45" rx="18" fill="#786887" stroke="#594c68" stroke-width="2"/>
+            <circle cx="565" cy="158" r="10" fill="#4d454f"/>
+            <path d="M565 158V173M552 173H578" stroke="#4d454f" stroke-width="4"/>
+          </g>
+          <g class="furniture" data-furniture="Bookcase">
+            <rect x="621" y="20" width="24" height="155" rx="2" fill="#a57d57" stroke="#765940" stroke-width="2"/>
+            <path d="M623 59H643M623 98H643M623 137H643" stroke="#765940" stroke-width="3"/>
+          </g>
+
+          <!-- utility wall -->
+          <g class="furniture" data-furniture="Storage cabinets">
+            <rect x="15" y="359" width="68" height="22" rx="3" fill="#9d895f" stroke="#776747" stroke-width="2"/>
+            <rect x="15" y="386" width="68" height="22" rx="3" fill="#9d895f" stroke="#776747" stroke-width="2"/>
+            <rect x="15" y="413" width="68" height="22" rx="3" fill="#9d895f" stroke="#776747" stroke-width="2"/>
+          </g>
+
+          <!-- labels -->
+          <!-- door and circulation -->
+          <g data-zone="none">
+            <path d="M651 199A51 51 0 0 1 600 148" fill="none" stroke="#26312c" stroke-width="3"/>
+            <line x1="651" y1="199" x2="651" y2="148" stroke="#26312c" stroke-width="3"/>
+            <path d="M651 295A51 51 0 0 1 600 346" fill="none" stroke="#26312c" stroke-width="3"/>
+            <line x1="651" y1="295" x2="651" y2="346" stroke="#26312c" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const widthInput = document.getElementById('roomWidth');
+    const lengthInput = document.getElementById('roomLength');
+    const areaStat = document.getElementById('areaStat');
+    const widthLabel = document.getElementById('widthLabel');
+    const lengthLabel = document.getElementById('lengthLabel');
+    const plan = document.getElementById('plan');
+    let zoom = 1;
+    let renderedRoomWidth = 660;
+    let renderedRoomLength = 460;
+
+    function updateDimensions() {
+      const width = Math.max(12, Number(widthInput.value) || 28);
+      const length = Math.max(12, Number(lengthInput.value) || 40);
+      areaStat.textContent = (width * length).toLocaleString();
+      widthLabel.textContent = `${width} ft`;
+      lengthLabel.textContent = `${length} ft`;
+
+      if (typeof pxPerFoot !== 'undefined') {
+        pxPerFoot = 660 / 28;
+      }
+      const roomWidth = width * pxPerFoot;
+      const roomLength = length * pxPerFoot;
+      renderedRoomWidth = roomWidth;
+      renderedRoomLength = roomLength;
+      if (typeof furnitureState !== 'undefined') {
+        furnitureState.forEach((state, item) => applyFurnitureTransform(item));
+      }
+      document.getElementById('roomDepth').setAttribute('width', roomWidth);
+      document.getElementById('roomDepth').setAttribute('height', roomLength);
+      document.getElementById('roomWall').setAttribute('width', roomWidth);
+      document.getElementById('roomWall').setAttribute('height', roomLength);
+      document.getElementById('roomInner').setAttribute('width', roomWidth - 18);
+      document.getElementById('roomInner').setAttribute('height', roomLength - 18);
+      document.getElementById('widthTopLine').setAttribute('x2', roomWidth);
+      document.querySelectorAll('#plan line').forEach(line => {
+        if (line.getAttribute('x1') === '660') line.setAttribute('x1', roomWidth);
+        if (line.getAttribute('x2') === '660') line.setAttribute('x2', roomWidth);
+      });
+      document.getElementById('lengthSideLine').setAttribute('y2', roomLength);
+      document.querySelectorAll('#plan line').forEach(line => {
+        if (line.getAttribute('y1') === '460') line.setAttribute('y1', roomLength);
+        if (line.getAttribute('y2') === '460') line.setAttribute('y2', roomLength);
+      });
+      widthLabel.setAttribute('x', roomWidth / 2);
+      lengthLabel.setAttribute('y', roomLength / 2);
+      lengthLabel.setAttribute('transform', `rotate(-90 -16 ${roomLength / 2})`);
+      const gridLines = [];
+      for (let x = 9; x <= roomWidth - 9; x += pxPerFoot) {
+        gridLines.push(`M${x} 9V${roomLength - 9}`);
+      }
+      for (let y = 9; y <= roomLength - 9; y += pxPerFoot) {
+        gridLines.push(`M9 ${y}H${roomWidth - 9}`);
+      }
+      document.getElementById('roomGrid').innerHTML =
+        `<path d="${gridLines.join('')}"/>`;
+      plan.setAttribute('viewBox', `-38 -38 ${roomWidth + 76} ${roomLength + 76}`);
+    }
+
+    widthInput.addEventListener('input', updateDimensions);
+    lengthInput.addEventListener('input', updateDimensions);
+
+    document.getElementById('zoomIn').addEventListener('click', () => setZoom(zoom + .1));
+    document.getElementById('zoomOut').addEventListener('click', () => setZoom(zoom - .1));
+    document.getElementById('zoomReset').addEventListener('click', () => setZoom(1));
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    function setZoom(value) {
+      zoom = Math.max(.7, Math.min(1.6, value));
+      plan.style.transform = `scale(${zoom})`;
+      document.getElementById('zoomReset').textContent = `${Math.round(zoom * 100)}%`;
+    }
+
+    const furnitureWidth = document.getElementById('furnitureWidth');
+    const furnitureLength = document.getElementById('furnitureLength');
+    const furnitureRotation = document.getElementById('furnitureRotation');
+    const furnitureControls = document.getElementById('furnitureControls');
+    const selectedName = document.getElementById('selectedName');
+    // Use one scale for both axes so Width and Depth are represented proportionally.
+    let pxPerFoot = 660 / 28;
+    const furnitureState = new Map();
+    let selectedFurniture = null;
+
+    plan.querySelectorAll('.furniture').forEach((item, index) => {
+      item.dataset.layoutIndex = String(index);
+      const box = item.getBBox();
+      const originalWidthFt = box.width / pxPerFoot;
+      const originalLengthFt = box.height / pxPerFoot;
+      furnitureState.set(item, {
+        centerX: box.x + box.width / 2,
+        centerY: box.y + box.height / 2,
+        originalWidthFt,
+        originalLengthFt,
+        widthFt: originalWidthFt,
+        lengthFt: originalLengthFt,
+        rotation: 0,
+        tx: 0,
+        ty: 0
+      });
+
+      item.addEventListener('pointerdown', event => {
+        selectFurniture(item);
+        item.setPointerCapture(event.pointerId);
+        const state = furnitureState.get(item);
+        const point = getSvgPoint(event);
+        state.dragStart = { x: point.x, y: point.y, tx: state.tx, ty: state.ty };
+      });
+
+      item.addEventListener('pointermove', event => {
+        const state = furnitureState.get(item);
+        if (!state.dragStart) return;
+        const point = getSvgPoint(event);
+        state.tx = state.dragStart.tx + point.x - state.dragStart.x;
+        state.ty = state.dragStart.ty + point.y - state.dragStart.y;
+        applyFurnitureTransform(item);
+      });
+
+      item.addEventListener('pointerup', event => {
+        const state = furnitureState.get(item);
+        state.dragStart = null;
+        if (item.hasPointerCapture(event.pointerId)) item.releasePointerCapture(event.pointerId);
+      });
+    });
+
+    function getSvgPoint(event) {
+      const point = plan.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(plan.getScreenCTM().inverse());
+    }
+
+    function selectFurniture(item) {
+      if (selectedFurniture) selectedFurniture.classList.remove('selected');
+      selectedFurniture = item;
+      item.classList.add('selected');
+      furnitureControls.classList.add('visible');
+      const state = furnitureState.get(item);
+      selectedName.textContent = `${item.dataset.furniture} · ${state.widthFt.toFixed(1)} × ${state.lengthFt.toFixed(1)} ft`;
+      furnitureWidth.value = state.widthFt.toFixed(1);
+      furnitureLength.value = state.lengthFt.toFixed(1);
+      furnitureRotation.value = state.rotation;
+    }
+
+    function applyFurnitureTransform(item) {
+      const state = furnitureState.get(item);
+      const scaleX = state.widthFt / state.originalWidthFt;
+      const scaleY = state.lengthFt / state.originalLengthFt;
+      const positionScaleX = renderedRoomWidth / 660;
+      const positionScaleY = renderedRoomLength / 460;
+      const positionOffsetX = state.centerX * (positionScaleX - 1);
+      const positionOffsetY = state.centerY * (positionScaleY - 1);
+      item.setAttribute(
+        'transform',
+        `translate(${state.tx + positionOffsetX} ${state.ty + positionOffsetY}) translate(${state.centerX} ${state.centerY}) rotate(${state.rotation}) scale(${scaleX} ${scaleY}) translate(${-state.centerX} ${-state.centerY})`
+      );
+      if (selectedFurniture === item) {
+        selectedName.textContent = `${item.dataset.furniture} · ${state.widthFt.toFixed(1)} × ${state.lengthFt.toFixed(1)} ft`;
+      }
+    }
+
+    furnitureWidth.addEventListener('input', () => {
+      if (!selectedFurniture) return;
+      const state = furnitureState.get(selectedFurniture);
+      state.widthFt = Math.max(.5, Number(furnitureWidth.value) || state.widthFt);
+      applyFurnitureTransform(selectedFurniture);
+    });
+
+    furnitureLength.addEventListener('input', () => {
+      if (!selectedFurniture) return;
+      const state = furnitureState.get(selectedFurniture);
+      state.lengthFt = Math.max(.5, Number(furnitureLength.value) || state.lengthFt);
+      applyFurnitureTransform(selectedFurniture);
+    });
+
+    furnitureRotation.addEventListener('input', () => {
+      if (!selectedFurniture) return;
+      const state = furnitureState.get(selectedFurniture);
+      state.rotation = Number(furnitureRotation.value) || 0;
+      applyFurnitureTransform(selectedFurniture);
+      scheduleAutoSave();
+    });
+
+    const SAVE_KEY = 'basement-layout-save-v1';
+    const saveStatus = document.getElementById('saveStatus');
+    let autoSaveTimer = null;
+
+    function getLayoutSnapshot() {
+      return {
+        roomWidth: Number(widthInput.value),
+        roomLength: Number(lengthInput.value),
+        zoom,
+        furniture: Array.from(furnitureState.entries()).map(([item, state]) => ({
+          name: item.dataset.furniture,
+          index: Number(item.dataset.layoutIndex),
+          widthFt: state.widthFt,
+          lengthFt: state.lengthFt,
+          rotation: state.rotation,
+          tx: state.tx,
+          ty: state.ty
+        }))
+      };
+    }
+
+    function saveLayout(showConfirmation = true) {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(getLayoutSnapshot()));
+        if (showConfirmation) {
+          saveStatus.textContent = 'Saved';
+          window.setTimeout(() => { saveStatus.textContent = ''; }, 1800);
+        }
+      } catch (error) {
+        saveStatus.textContent = 'Save failed';
+      }
+    }
+
+    function scheduleAutoSave() {
+      window.clearTimeout(autoSaveTimer);
+      autoSaveTimer = window.setTimeout(() => saveLayout(false), 500);
+    }
+
+    function restoreLayout() {
+      let snapshot;
+      try {
+        snapshot = JSON.parse(localStorage.getItem(SAVE_KEY));
+      } catch (error) {
+        return;
+      }
+      if (!snapshot) return;
+
+      if (snapshot.roomWidth) widthInput.value = snapshot.roomWidth;
+      if (snapshot.roomLength) lengthInput.value = snapshot.roomLength;
+      updateDimensions();
+
+      (snapshot.furniture || []).forEach(saved => {
+        const item = Array.from(plan.querySelectorAll('.furniture')).find(candidate =>
+          candidate.dataset.furniture === saved.name &&
+          Number(candidate.dataset.layoutIndex) === saved.index
+        );
+        if (!item) return;
+        const state = furnitureState.get(item);
+        state.widthFt = saved.widthFt || state.widthFt;
+        state.lengthFt = saved.lengthFt || state.lengthFt;
+        state.rotation = saved.rotation || 0;
+        state.tx = saved.tx || 0;
+        state.ty = saved.ty || 0;
+        applyFurnitureTransform(item);
+      });
+
+      if (snapshot.zoom) setZoom(snapshot.zoom);
+      saveStatus.textContent = 'Restored';
+      window.setTimeout(() => { saveStatus.textContent = ''; }, 1800);
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', () => saveLayout(true));
+    widthInput.addEventListener('change', scheduleAutoSave);
+    lengthInput.addEventListener('change', scheduleAutoSave);
+    furnitureWidth.addEventListener('input', scheduleAutoSave);
+    furnitureLength.addEventListener('input', scheduleAutoSave);
+    document.querySelectorAll('.furniture').forEach(item => {
+      item.addEventListener('pointerup', scheduleAutoSave);
+    });
+    document.getElementById('zoomIn').addEventListener('click', scheduleAutoSave);
+    document.getElementById('zoomOut').addEventListener('click', scheduleAutoSave);
+    document.getElementById('zoomReset').addEventListener('click', scheduleAutoSave);
+
+    restoreLayout();
+
+    updateDimensions();
+  </script>
+</body>
+</html>
