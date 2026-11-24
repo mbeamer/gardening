@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172720">
+  <title>Hearty Vegetable Lasagna | Prep Guide</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #172720;
+      --panel: #21372d;
+      --panel-raised: #2a4337;
+      --ink: #f5f4e9;
+      --muted: #becbbd;
+      --accent: #c8e36a;
+      --accent-ink: #1b2b1f;
+      --line: #496052;
+      --done: #89bd91;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 85% 0%, #365543 0, transparent 38rem),
+        var(--page);
+      color: var(--ink);
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    a { color: var(--accent); }
+
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 38px 0 56px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    header { margin-bottom: 16px; }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4.5vw, 3.3rem);
+      font-weight: 500;
+      letter-spacing: -.045em;
+      line-height: 1.08;
+    }
+
+    .intro {
+      max-width: 690px;
+      margin: 9px 0 14px;
+      color: var(--muted);
+      font-size: .98rem;
+      line-height: 1.6;
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 0;
+    }
+
+    .fact {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #20352b;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .fact strong { color: var(--ink); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(265px, .82fr) minmax(0, 1.55fr);
+      gap: 20px;
+      align-items: start;
+      transition: grid-template-columns .25s ease;
+    }
+
+    .layout.ingredients-collapsed {
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      box-shadow: 0 18px 50px #08130d40;
+    }
+
+    .ingredients {
+      display: flex;
+      align-self: stretch;
+      flex-direction: column;
+      min-width: 0;
+      padding: 0;
+      overflow: hidden;
+      transition: width .25s ease;
+    }
+
+    .ingredient-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .ingredient-heading {
+      font-size: 1.35rem;
+      white-space: nowrap;
+    }
+
+    .ingredient-toggle {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-raised);
+      color: var(--accent);
+      font-size: .84rem;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .ingredient-toggle:hover { border-color: var(--accent); }
+    .ingredient-toggle-icon { font-size: 1.25rem; line-height: 1; }
+
+    .ingredients.is-collapsed .ingredient-panel-header {
+      flex: 1;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 0;
+      padding: 10px 6px;
+      border-bottom: 0;
+    }
+
+    .ingredients.is-collapsed .ingredient-heading { display: none; }
+
+    .ingredients.is-collapsed .ingredient-toggle {
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 4px;
+      border-color: transparent;
+      background: transparent;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    .ingredients.is-collapsed .ingredient-toggle:hover {
+      border-color: var(--line);
+      background: var(--panel-raised);
+    }
+
+    .ingredient-content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 0 22px 20px;
+    }
+    .ingredient-content[hidden] { display: none; }
+
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.65rem;
+      font-weight: 500;
+    }
+
+    .section-note {
+      margin: 8px 0 18px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
+    .ingredient-list {
+      display: grid;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ingredient-list li {
+      border-bottom: 1px solid #49605280;
+    }
+
+    .ingredient-list label {
+      display: grid;
+      grid-template-columns: 19px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 0;
+      color: var(--ink);
+      font-size: .94rem;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 2px 0 0;
+      accent-color: var(--accent);
+    }
+
+    .ingredient-list input:checked + span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--done);
+    }
+
+    .shopping-link {
+      display: inline-flex;
+      margin-top: 18px;
+      font-size: .92rem;
+      font-weight: 700;
+      text-underline-offset: 4px;
+    }
+
+    .guide { overflow: hidden; }
+
+    .guide-top {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .guide-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 13px;
+    }
+
+    .step-count {
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 700;
+    }
+
+    .progress-track {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #14251c;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width .25s ease;
+    }
+
+    .step-card { min-height: 365px; padding: 27px 28px 20px; }
+
+    .step-kicker {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .step-card h2 { font-size: clamp(1.7rem, 4vw, 2.35rem); }
+
+    .step-description {
+      max-width: 650px;
+      margin: 14px 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 11px;
+      margin: 18px 0;
+      padding-left: 21px;
+      line-height: 1.55;
+    }
+
+    .step-list li { padding-left: 4px; }
+    .step-list li::marker { color: var(--accent); font-weight: 800; }
+
+    .cue {
+      margin-top: 19px;
+      padding: 13px 15px;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 11px 11px 0;
+      background: #172920;
+      color: var(--muted);
+      font-size: .91rem;
+      line-height: 1.5;
+    }
+
+    .cue strong { color: var(--ink); }
+
+    .timer-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #1a2e24;
+    }
+
+    .timer-display {
+      min-width: 74px;
+      margin-right: auto;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .timer-status {
+      flex-basis: 100%;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .timer-button, .nav-button, .complete-button {
+      min-height: 42px;
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-raised);
+      color: var(--ink);
+      font-size: .88rem;
+      font-weight: 750;
+    }
+
+    .timer-button:hover, .nav-button:hover { border-color: var(--accent); }
+
+    .step-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 24px 22px;
+      border-top: 1px solid var(--line);
+    }
+
+    .nav-group { display: flex; gap: 9px; }
+
+    .complete-button {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .complete-button:hover { background: #d7ed8e; }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+
+    .equipment {
+      margin-top: 20px;
+      padding: 18px 21px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .equipment strong { color: var(--ink); }
+
+    footer {
+      margin-top: 25px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.6;
+    }
+
+    footer a { overflow-wrap: anywhere; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 22px, 600px); padding-top: 24px; }
+      .layout {
+        position: relative;
+        display: block;
+      }
+      .ingredients {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(340px, calc(100% - 18px));
+      }
+      .ingredients.is-collapsed { width: 50px; }
+      .ingredients.is-collapsed .ingredient-panel-header { min-height: 100%; }
+      .step-card { min-height: 0; padding: 23px 20px; }
+      .guide-top, .step-controls { padding-right: 19px; padding-left: 19px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">Your step-by-step dinner plan</p>
+      <h1>Hearty Vegetable Lasagna</h1>
+      <p class="intro">A cozy, veggie-packed bake with a rich mushroom and pepper sauce, creamy ricotta layers, and a golden mozzarella finish.</p>
+      <div class="facts" aria-label="Recipe details">
+        <span class="fact"><strong>12</strong> servings</span>
+        <span class="fact"><strong>25 min</strong> prep</span>
+        <span class="fact"><strong>1 hr</strong> cook</span>
+        <span class="fact"><strong>15 min</strong> rest</span>
+        <span class="fact"><strong>350&deg;F</strong> oven</span>
+      </div>
+    </header>
+
+    <div class="layout ingredients-collapsed" id="recipe-layout">
+      <aside class="panel ingredients is-collapsed" id="ingredients-panel" aria-label="Recipe ingredients">
+        <div class="ingredient-panel-header">
+          <h2 class="ingredient-heading">Set out your ingredients</h2>
+          <button
+            class="ingredient-toggle"
+            id="ingredients-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="ingredients-content">
+            <span id="ingredients-toggle-label">Show ingredients</span>
+            <span class="ingredient-toggle-icon" aria-hidden="true">&lsaquo;</span>
+          </button>
+        </div>
+        <div class="ingredient-content" id="ingredients-content" hidden>
+          <p class="section-note">Check items off as you measure them. Amounts are for the source recipe's 12 servings.</p>
+          <ul class="ingredient-list">
+            <li><label><input type="checkbox"><span>1 (16 oz) package lasagna noodles</span></label></li>
+            <li><label><input type="checkbox"><span>2 tbsp vegetable oil</span></label></li>
+            <li><label><input type="checkbox"><span>1 lb fresh mushrooms, sliced</span></label></li>
+            <li><label><input type="checkbox"><span>3/4 cup chopped green bell pepper</span></label></li>
+            <li><label><input type="checkbox"><span>3/4 cup chopped onion</span></label></li>
+            <li><label><input type="checkbox"><span>3 cloves garlic, minced</span></label></li>
+            <li><label><input type="checkbox"><span>2 (26 oz) jars pasta sauce</span></label></li>
+            <li><label><input type="checkbox"><span>1 tsp dried basil</span></label></li>
+            <li><label><input type="checkbox"><span>1 (15 oz) container part-skim ricotta</span></label></li>
+            <li><label><input type="checkbox"><span>4 cups shredded mozzarella, divided</span></label></li>
+            <li><label><input type="checkbox"><span>2 eggs</span></label></li>
+            <li><label><input type="checkbox"><span>1/2 cup grated Parmesan</span></label></li>
+          </ul>
+          <a class="shopping-link" href="hearty-vegetable-lasagna-shopping-list.md">Open the separate shopping list &rarr;</a>
+        </div>
+      </aside>
+
+      <section aria-label="Interactive preparation steps">
+        <div class="panel guide">
+          <div class="guide-top">
+            <div class="guide-topline">
+              <span class="eyebrow" style="margin:0">Cook along</span>
+              <span class="step-count" id="step-count">Step 1 of 6</span>
+            </div>
+            <div
+              class="progress-track"
+              id="progress-track"
+              role="progressbar"
+              aria-label="Recipe progress"
+              aria-valuemin="0"
+              aria-valuemax="6"
+              aria-valuenow="0">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+          </div>
+          <div class="step-card" id="step-card" aria-live="polite"></div>
+          <div class="step-controls">
+            <div class="nav-group">
+              <button class="nav-button" id="previous-button" type="button">Back</button>
+              <button class="nav-button" id="next-button" type="button">Next step</button>
+            </div>
+            <button class="complete-button" id="complete-button" type="button">Mark complete</button>
+          </div>
+        </div>
+
+        <div class="panel equipment">
+          <strong>Helpful equipment:</strong> large pot, colander, large saucepan, mixing bowl, 9 x 13-inch baking dish, knife and cutting board. Set the baking dish on a rimmed sheet pan to catch any bubbling sauce.
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Adapted in original wording from
+      <a href="https://www.allrecipes.com/recipe/11786/hearty-vegetable-lasagna/" target="_blank" rel="noopener noreferrer">Allrecipes: Hearty Vegetable Lasagna</a>.
+      Check the source for its latest notes. Recipe contains egg and dairy; the noodles and sauce may contain additional allergens, so check package labels.
+    </footer>
+  </main>
+
+  <div class="sr-only" id="announcer" aria-live="polite"></div>
+
+  <script>
+    const steps = [
+      {
+        title: "Get the prep done",
+        description: "Set up your workspace before the sauce goes on the stove.",
+        items: [
+          "Slice the mushrooms; chop the bell pepper and onion; mince the garlic.",
+          "Set out the cheeses and eggs. Measure the sauce and dried basil.",
+          "Heat the oven to 350°F (175°C) and grease a 9 x 13-inch baking dish. Set it on a rimmed sheet pan if you have one."
+        ],
+        cue: "Keep the mozzarella divided: 2 cups go into the ricotta mixture, and the remaining 2 cups finish the top."
+      },
+      {
+        title: "Cook the noodles",
+        description: "Start the pasta while you prepare the sauce ingredients.",
+        items: [
+          "Bring a large pot of water to a boil and cook the lasagna noodles for about 10 minutes, until al dente.",
+          "Drain and rinse the noodles with cold water so they are easier to handle while layering."
+        ],
+        timer: [{ label: "Noodle timer · 10 min", minutes: 10 }],
+        cue: "Keep the noodles intact; lay them flat or separate them gently after draining."
+      },
+      {
+        title: "Build the vegetable sauce",
+        description: "Soften the vegetables first, then let the tomato sauce simmer.",
+        items: [
+          "Warm the vegetable oil in a large saucepan over medium heat.",
+          "Add mushrooms, bell pepper, onion, and garlic. Stir often for about 5 minutes, until the vegetables are tender.",
+          "Mix in both jars of pasta sauce and the basil. Bring the sauce to a boil, then lower the heat and simmer for 15 minutes."
+        ],
+        timer: [
+          { label: "Soften vegetables · 5 min", minutes: 5 },
+          { label: "Simmer sauce · 15 min", minutes: 15 }
+        ],
+        cue: "Stir occasionally during the simmer. Keep the heat low enough for a gentle bubble."
+      },
+      {
+        title: "Mix the ricotta layer",
+        description: "Make the creamy filling while the sauce simmers.",
+        items: [
+          "In a medium bowl, combine the ricotta, 2 cups of the mozzarella, and both eggs.",
+          "Stir until evenly mixed, then set the bowl near your baking dish."
+        ],
+        cue: "The remaining 2 cups of mozzarella are reserved for the final topping."
+      },
+      {
+        title: "Layer the lasagna",
+        description: "Divide the noodles and filling into two even layers.",
+        items: [
+          "Spread about 1 cup of vegetable sauce across the bottom of the baking dish.",
+          "Add half the noodles. Spread on half the ricotta mixture, then add a layer of sauce and half the Parmesan.",
+          "Repeat with the remaining noodles, ricotta mixture, sauce, and Parmesan.",
+          "Scatter the reserved mozzarella evenly over the top."
+        ],
+        cue: "A thin sauce layer under the pasta helps keep the bottom from drying out. Arrange noodles to cover the dish edge to edge."
+      },
+      {
+        title: "Bake, rest, and serve",
+        description: "Let the oven finish the layers, then give the lasagna time to set.",
+        items: [
+          "Bake uncovered at 350°F (175°C) for 40 minutes.",
+          "Rest the dish for 15 minutes before slicing so the layers hold together."
+        ],
+        timer: [
+          { label: "Bake timer · 40 min", minutes: 40 },
+          { label: "Rest timer · 15 min", minutes: 15 }
+        ],
+        cue: "Use oven mitts when moving the hot pan. Source recipe timing is 40 minutes baking plus a 15-minute rest."
+      }
+    ];
+
+    let currentStep = 0;
+    const completed = new Set();
+    const card = document.getElementById("step-card");
+    const count = document.getElementById("step-count");
+    const track = document.getElementById("progress-track");
+    const fill = document.getElementById("progress-fill");
+    const previous = document.getElementById("previous-button");
+    const next = document.getElementById("next-button");
+    const complete = document.getElementById("complete-button");
+    const announcer = document.getElementById("announcer");
+    const timerStates = new Map();
+    let timerInterval = null;
+    let timerUiUpdater = null;
+    const recipeLayout = document.getElementById("recipe-layout");
+    const ingredientsPanel = document.getElementById("ingredients-panel");
+    const ingredientsToggle = document.getElementById("ingredients-toggle");
+    const ingredientsToggleLabel = document.getElementById("ingredients-toggle-label");
+    const ingredientsToggleIcon = ingredientsToggle.querySelector(".ingredient-toggle-icon");
+    const ingredientsContent = document.getElementById("ingredients-content");
+
+    function syncTimer(timer) {
+      if (timer.endsAt === null) return;
+      timer.remainingSeconds = Math.max(0, Math.ceil((timer.endsAt - Date.now()) / 1000));
+      if (timer.remainingSeconds === 0) {
+        timer.endsAt = null;
+        timer.finished = true;
+        timer.paused = false;
+        announcer.textContent = `${timer.label} complete`;
+      }
+    }
+
+    function refreshTimers() {
+      for (const timer of timerStates.values()) syncTimer(timer);
+      if (timerUiUpdater) timerUiUpdater();
+      if (![...timerStates.values()].some((timer) => timer.endsAt !== null)) {
+        window.clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startTimerTicker() {
+      if (timerInterval === null) timerInterval = window.setInterval(refreshTimers, 250);
+    }
+
+    ingredientsToggle.addEventListener("click", () => {
+      const expanded = ingredientsToggle.getAttribute("aria-expanded") !== "true";
+      ingredientsToggle.setAttribute("aria-expanded", String(expanded));
+      ingredientsToggleLabel.textContent = expanded ? "Hide ingredients" : "Show ingredients";
+      ingredientsToggleIcon.textContent = expanded ? "‹" : "›";
+      ingredientsContent.hidden = !expanded;
+      ingredientsPanel.classList.toggle("is-collapsed", !expanded);
+      recipeLayout.classList.toggle("ingredients-collapsed", !expanded);
+    });
+
+    function renderStep() {
+      const step = steps[currentStep];
+      count.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+      card.replaceChildren();
+      timerUiUpdater = null;
+
+      const kicker = document.createElement("p");
+      kicker.className = "step-kicker";
+      kicker.textContent = `Step ${String(currentStep + 1).padStart(2, "0")}`;
+
+      const title = document.createElement("h2");
+      title.textContent = step.title;
+
+      const description = document.createElement("p");
+      description.className = "step-description";
+      description.textContent = step.description;
+
+      const list = document.createElement("ol");
+      list.className = "step-list";
+      step.items.forEach((text) => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        list.append(item);
+      });
+
+      const cue = document.createElement("div");
+      cue.className = "cue";
+      const cueLabel = document.createElement("strong");
+      cueLabel.textContent = "Cook's cue: ";
+      cue.append(cueLabel, document.createTextNode(step.cue));
+
+      card.append(kicker, title, description, list, cue);
+
+      if (step.timer) {
+        const timer = document.createElement("div");
+        timer.className = "timer-box";
+        timer.setAttribute("aria-label", "Step timers");
+
+        const timerState = timerStates.get(currentStep) || {
+          label: "",
+          durationSeconds: 0,
+          remainingSeconds: 0,
+          endsAt: null,
+          paused: false,
+          finished: false
+        };
+        timerStates.set(currentStep, timerState);
+        syncTimer(timerState);
+
+        const display = document.createElement("span");
+        display.className = "timer-display";
+        display.textContent = "00:00";
+        display.setAttribute("aria-live", "off");
+
+        const status = document.createElement("span");
+        status.className = "timer-status";
+
+        function showTime() {
+          const minutes = Math.floor(timerState.remainingSeconds / 60);
+          const seconds = timerState.remainingSeconds % 60;
+          display.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        }
+
+        function updateTimerView() {
+          showTime();
+          if (timerState.endsAt !== null) {
+            status.textContent = `${timerState.label} running`;
+          } else if (timerState.finished) {
+            status.textContent = `${timerState.label} complete`;
+          } else if (timerState.paused) {
+            status.textContent = `${timerState.label} paused`;
+          } else {
+            status.textContent = "Choose a timer for a source-listed cooking or resting time.";
+          }
+          pause.disabled = timerState.endsAt === null;
+          resume.disabled = timerState.endsAt !== null || !timerState.paused || timerState.remainingSeconds === 0;
+        }
+
+        step.timer.forEach((timerOption) => {
+          const button = document.createElement("button");
+          button.className = "timer-button";
+          button.type = "button";
+          button.textContent = timerOption.label;
+          button.addEventListener("click", () => {
+            timerState.label = timerOption.label;
+            timerState.durationSeconds = timerOption.minutes * 60;
+            timerState.remainingSeconds = timerState.durationSeconds;
+            timerState.endsAt = Date.now() + timerState.durationSeconds * 1000;
+            timerState.paused = false;
+            timerState.finished = false;
+            updateTimerView();
+            startTimerTicker();
+          });
+          timer.append(button);
+        });
+
+        const pause = document.createElement("button");
+        pause.className = "timer-button";
+        pause.type = "button";
+        pause.textContent = "Pause";
+        pause.addEventListener("click", () => {
+          syncTimer(timerState);
+          if (timerState.endsAt === null) return;
+          timerState.endsAt = null;
+          timerState.paused = true;
+          updateTimerView();
+        });
+
+        const resume = document.createElement("button");
+        resume.className = "timer-button";
+        resume.type = "button";
+        resume.textContent = "Resume";
+        resume.addEventListener("click", () => {
+          if (!timerState.paused || timerState.remainingSeconds === 0) return;
+          timerState.endsAt = Date.now() + timerState.remainingSeconds * 1000;
+          timerState.paused = false;
+          updateTimerView();
+          startTimerTicker();
+        });
+
+        const reset = document.createElement("button");
+        reset.className = "timer-button";
+        reset.type = "button";
+        reset.textContent = "Reset";
+        reset.addEventListener("click", () => {
+          timerState.label = "";
+          timerState.durationSeconds = 0;
+          timerState.remainingSeconds = 0;
+          timerState.endsAt = null;
+          timerState.paused = false;
+          timerState.finished = false;
+          updateTimerView();
+        });
+
+        timer.append(display, pause, resume, reset, status);
+        card.append(timer);
+        timerUiUpdater = updateTimerView;
+        updateTimerView();
+      }
+
+      previous.disabled = currentStep === 0;
+      next.disabled = currentStep === steps.length - 1;
+      complete.textContent = completed.has(currentStep) ? "Completed" : "Mark complete";
+      complete.disabled = completed.has(currentStep);
+
+      const progress = completed.size;
+      fill.style.width = `${(progress / steps.length) * 100}%`;
+      track.setAttribute("aria-valuenow", String(progress));
+      announcer.textContent = `Step ${currentStep + 1} of ${steps.length}: ${step.title}`;
+    }
+
+    previous.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep -= 1;
+        renderStep();
+      }
+    });
+
+    next.addEventListener("click", () => {
+      if (currentStep < steps.length - 1) {
+        currentStep += 1;
+        renderStep();
+      }
+    });
+
+    complete.addEventListener("click", () => {
+      completed.add(currentStep);
+      if (currentStep < steps.length - 1) currentStep += 1;
+      renderStep();
+    });
+
+    renderStep();
+  </script>
+</body>
+</html>
